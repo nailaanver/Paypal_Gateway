@@ -66,11 +66,18 @@ def create_paypal_payment(request,pk):
     payment =paypalrestsdk.Payment({
         "intent":"sale",
         "payer":{"payment_method":"paypal"},
+<<<<<<< HEAD
         "redirect_urls": {
     "return_url": "http://localhost:8000/execute/",
     "cancel_url": "http://localhost:8000/cancel/",
 },
 
+=======
+        "redirect_urls":{
+            "return_url":"http://localhost:8000/api/payments/execute/",
+            "cancel_url": "http://localhost:8000/api/payments/cancel/",
+        },
+>>>>>>> af632ef10292e9b381cba117a4dc62c6f8d92b1e
         "transactions":[{
             "amount":{
                 "total":str(order.amount),
@@ -101,6 +108,7 @@ def create_paypal_payment(request,pk):
 def execute_payment(request):
     payment_id = request.GET.get("paymentId")
     payer_id = request.GET.get("PayerID")
+<<<<<<< HEAD
 
     # 1. Check if paymentId and PayerID exist
     if not payment_id or not payer_id:
@@ -134,6 +142,18 @@ def execute_payment(request):
     # 5. If PayPal returns error
     return Response({"error": payment.error}, status=400)
 
+=======
+    
+    payment = paypalrestsdk.Payment.find(payment_id)
+    
+    if payment.execute({"prayer_id":payer_id}):
+        order = Order.objects.get(paypal_order_id=payment_id)
+        order.status = "PAID"
+        order.save()
+        
+        return Response({"message":"Payment successful!"})
+    return Response({"error":payment.error},status=400)
+>>>>>>> af632ef10292e9b381cba117a4dc62c6f8d92b1e
 
 # cancel payment
 
