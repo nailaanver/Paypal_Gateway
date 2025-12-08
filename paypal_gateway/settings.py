@@ -12,6 +12,12 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-0-5%q)5ad6eo*unz$0-*zep&bk(3vny(y-a$#l*7-)zy3l-p!!'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 PAYPAL_CLIENT_ID = "AftZOJG72ClLPTWHE0qplx-lfay8Pnab9io-dF0YbESQO1niHAzeBZouXQl_-pmCCDZlLghHcS2PUKGY"
 PAYPAL_CLIENT_SECRET = "EI_FCmMv5stbxFQnyircNMLw_mZSyxmBrRaypKUtuu1Vzs9B-Ot999Vovj0wX_Zy2WNCNL6svQWyy3OT"
