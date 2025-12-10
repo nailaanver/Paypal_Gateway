@@ -4,7 +4,29 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Order
-from .serializer import OrderSerializer
+from rest_framework.response import Response
+from rest_framework import status
+from .serializer import RegisterSerializer,OrderSerializer
+
+from rest_framework.response import Response
+from django.contrib.auth.models import User
+from rest_framework_simplejwt.tokens import RefreshToken
+from .models import Order
+import paypalrestsdk
+from rest_framework.decorators import api_view
+
+@api_view(['POST'])
+def register_user(request):
+    username = request.data.get("username")
+    password = request.data.get("password")
+    
+    if User.objects.filter(username=username).exists():
+        return Response({"error":"username already exists"},status=400)
+    
+    user = User.objects.create_user(username=username,password=password)
+    return Response({"message":"User created successfully"},status=201)
+
+
 
 
 @api_view(['POST'])
@@ -66,18 +88,13 @@ def create_paypal_payment(request,pk):
     payment =paypalrestsdk.Payment({
         "intent":"sale",
         "payer":{"payment_method":"paypal"},
-<<<<<<< HEAD
+        
         "redirect_urls": {
-    "return_url": "http://localhost:8000/execute/",
-    "cancel_url": "http://localhost:8000/cancel/",
-},
+        "return_url": "http://localhost:8000/api/payments/execute/",
+         "cancel_url": "http://localhost:8000/api/payments/cancel/"
 
-=======
-        "redirect_urls":{
-            "return_url":"http://localhost:8000/api/payments/execute/",
-            "cancel_url": "http://localhost:8000/api/payments/cancel/",
-        },
->>>>>>> af632ef10292e9b381cba117a4dc62c6f8d92b1e
+    },
+
         "transactions":[{
             "amount":{
                 "total":str(order.amount),
@@ -108,55 +125,36 @@ def create_paypal_payment(request,pk):
 def execute_payment(request):
     payment_id = request.GET.get("paymentId")
     payer_id = request.GET.get("PayerID")
-<<<<<<< HEAD
 
-    # 1. Check if paymentId and PayerID exist
     if not payment_id or not payer_id:
-        return Response(
-            {"error": "Missing paymentId or PayerID"},
-            status=400
-        )
+        return Response({"error": "Missing paymentId or PayerID"}, status=400)
 
-    # 2. Find PayPal payment
-    try:
-        payment = paypalrestsdk.Payment.find(payment_id)
-    except Exception as e:
-        return Response({"error": str(e)}, status=400)
+    payment = paypalrestsdk.Payment.find(payment_id)
 
-    # 3. Execute payment (correct key = payer_id)
     if payment.execute({"payer_id": payer_id}):
-        
-        # 4. Update your order status
+        # update your order
         try:
             order = Order.objects.get(paypal_order_id=payment_id)
-            order.status = "PAID"
+            order.status = "COMPLETED"
             order.save()
         except Order.DoesNotExist:
-            return Response(
-                {"warning": "Payment executed but order not found"},
-                status=200
-            )
-
-        return Response({"message": "Payment successful!"})
-
-    # 5. If PayPal returns error
-    return Response({"error": payment.error}, status=400)
-
-=======
-    
-    payment = paypalrestsdk.Payment.find(payment_id)
-    
-    if payment.execute({"prayer_id":payer_id}):
-        order = Order.objects.get(paypal_order_id=payment_id)
-        order.status = "PAID"
-        order.save()
+            pass
         
-        return Response({"message":"Payment successful!"})
-    return Response({"error":payment.error},status=400)
->>>>>>> af632ef10292e9b381cba117a4dc62c6f8d92b1e
+        return Response({
+            "message": "Payment successful",
+            "payment_id": payment_id
+        }, status=200)
+
+    else:
+        return Response({
+            "error": "Payment execution failed",
+            "details": payment.error
+        }, status=400)
+
 
 # cancel payment
 
 @api_view(['GET'])
 def cancel_payment(request):
-    return Response({"message":"Payment cancelled"})
+    return Response({"message": "Payment cancelled"}, status=200)
+

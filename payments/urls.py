@@ -1,5 +1,10 @@
 from django.urls import path
 from . import views
+from rest_framework import generics
+from django.contrib.auth.models import User
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework.response import Response
+
 
 urlpatterns = [
     path('orders/create/',views.create_order,name='create-order'),
@@ -10,6 +15,13 @@ urlpatterns = [
     
     
     path("orders/<int:pk>/create-payment/", views.create_paypal_payment),
-    path("execute/", views.execute_payment),
-    path("cancel/", views.cancel_payment),
+    path('payments/execute/', views.execute_payment, name='execute-payment'),
+    path('payments/cancel/', views.cancel_payment, name='cancel-payment'),
+    
+    path('register/',views.register_user,name='register'),
+    path('login/', TokenObtainPairView.as_view(), name='login'),
+    path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    
+
 ]
